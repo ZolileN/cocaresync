@@ -1,0 +1,43 @@
+CoCareSync Platform Tech Stack
+Frontend
+React Native: Cross-platform mobile app for offline data entry and clinician workflows.
+React: Web app for centralized patient data access and real-time analytics.
+Tailwind CSS: Responsive, consistent styling for mobile and web dashboards.
+Backend
+Node.js: Scalable server-side runtime for API management.
+Express.js: RESTful API framework with FHIR standards for TIER.Net, EDRWeb, NHLS, and private lab integration.
+Data Integration
+Python: Parse TIER.Net DDF files, EDRWeb XML exports, and NHLS/private lab data (e.g., TrakCare, DisaLab formats).
+FHIR APIs: Enable seamless data exchange with TIER.Net, EDRWeb, NHLS (TrakCare/DisaLab), and private lab systems.
+NHLS Integration: Connect to NHLS central data warehouse via FHIR APIs for CD4, viral load, and GeneXpert MTB/RIF results.
+Private Lab Integration: Interface with private labs (e.g., Ampath, Lancet) via standardized HL7/FHIR protocols for TB/HIV test results.
+AI/ML
+Python: Anomaly detection (Pandas, Scikit-learn) and NLP (SpaCy) for TB/HIV data validation and risk scoring across TIER.Net, EDRWeb, NHLS, and private lab data.
+TensorFlow: Machine learning for TB/HIV treatment timeline alignment and predictive analytics.
+Analytics Dashboard
+React: Web-based dashboard for real-time TB/HIV metrics (e.g., case finding rates, IPT uptake) from TIER.Net, EDRWeb, NHLS, and private labs.
+D3.js: Interactive visualizations for trends, compliance, and high-risk group monitoring.
+Chart.js: Lightweight charts for clinician and admin analytics (e.g., data completeness, error rates).
+Database
+PostgreSQL: Structured storage for patient records and clinical data from TIER.Net, EDRWeb, NHLS, and private labs.
+MongoDB: Unstructured data (e.g., clinician notes) storage and retrieval.
+Redis: In-memory caching for fast dashboard analytics and API responses.
+Offline Functionality
+React Native Async Storage: Cache data and queue API requests on mobile devices.
+SQLite: Local database for offline storage of TIER.Net, EDRWeb, NHLS, and private lab data.
+Security
+HIPAA-Compliant Encryption: AES-256 for secure data transfers and storage across all systems.
+Blockchain: Audit trails for data integrity and NDoH compliance.
+Infrastructure
+AWS: Cloud hosting for scalability, with ECS for web app deployment.
+Docker: Containerization for consistent environments across mobile and web.
+NGINX: Reverse proxy for load balancing and secure web app access.
+Rationale
+NHLS & Private Lab Integration: FHIR APIs and Python parsing connect to NHLS’s TrakCare/DisaLab and private lab systems (e.g., HL7-compliant Ampath, Lancet), ensuring unified TB/HIV data (CD4, viral load, GeneXpert MTB/RIF).
+Web App & Analytics: React with D3.js/Chart.js delivers real-time, interactive TB/HIV dashboards for decision-making.
+Scalability: Node.js, AWS, and Redis support nationwide rollout and high-performance analytics.
+Offline Support: React Native and SQLite enable functionality in low-connectivity rural areas.
+Interoperability: FHIR APIs and Python parsing ensure robust TIER.Net, EDRWeb, NHLS, and private lab integration.
+Security: HIPAA-compliant encryption and blockchain align with NDoH standards.
+
+

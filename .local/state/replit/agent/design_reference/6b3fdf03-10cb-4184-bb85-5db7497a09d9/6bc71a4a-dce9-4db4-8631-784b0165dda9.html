@@ -1,0 +1,722 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoCareSync - TB/HIV Data Management Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                borderRadius: {
+                    lg: "var(--radius)",
+                    md: "calc(var(--radius) - 2px)",
+                    sm: "calc(var(--radius) - 4px)",
+                },
+                colors: {
+                    background: "var(--background)",
+                    foreground: "var(--foreground)",
+                    card: {
+                        DEFAULT: "var(--card)",
+                        foreground: "var(--card-foreground)",
+                    },
+                    popover: {
+                        DEFAULT: "var(--popover)",
+                        foreground: "var(--popover-foreground)",
+                    },
+                    primary: {
+                        DEFAULT: "var(--primary)",
+                        foreground: "var(--primary-foreground)",
+                    },
+                    secondary: {
+                        DEFAULT: "var(--secondary)",
+                        foreground: "var(--secondary-foreground)",
+                    },
+                    muted: {
+                        DEFAULT: "var(--muted)",
+                        foreground: "var(--muted-foreground)",
+                    },
+                    accent: {
+                        DEFAULT: "var(--accent)",
+                        foreground: "var(--accent-foreground)",
+                    },
+                    destructive: {
+                        DEFAULT: "var(--destructive)",
+                        foreground: "var(--destructive-foreground)",
+                    },
+                    border: "var(--border)",
+                    input: "var(--input)",
+                    ring: "var(--ring)",
+                    chart: {
+                        "1": "var(--chart-1)",
+                        "2": "var(--chart-2)",
+                        "3": "var(--chart-3)",
+                        "4": "var(--chart-4)",
+                        "5": "var(--chart-5)",
+                    }
+                },
+                fontFamily: {
+                    sans: ["var(--font-sans)"],
+                    serif: ["var(--font-serif)"],
+                    mono: ["var(--font-mono)"],
+                }
+            },
+        }
+    };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --background: hsl(210 40% 98%);
+            --foreground: hsl(222 84% 4.9%);
+            --card: hsl(0 0% 100%);
+            --card-foreground: hsl(222 84% 4.9%);
+            --popover: hsl(0 0% 100%);
+            --popover-foreground: hsl(222 84% 4.9%);
+            --primary: hsl(210 100% 45%);
+            --primary-foreground: hsl(210 40% 98%);
+            --secondary: hsl(142 76% 36%);
+            --secondary-foreground: hsl(210 40% 98%);
+            --muted: hsl(210 40% 96%);
+            --muted-foreground: hsl(215 13% 37%);
+            --accent: hsl(45 93% 47%);
+            --accent-foreground: hsl(222 84% 4.9%);
+            --destructive: hsl(0 84% 60%);
+            --destructive-foreground: hsl(210 40% 98%);
+            --border: hsl(214 32% 91%);
+            --input: hsl(214 32% 91%);
+            --ring: hsl(210 100% 45%);
+            --chart-1: hsl(210 100% 45%);
+            --chart-2: hsl(142 76% 36%);
+            --chart-3: hsl(45 93% 47%);
+            --chart-4: hsl(0 84% 60%);
+            --chart-5: hsl(280 65% 60%);
+            --radius: 0.75rem;
+            --font-sans: 'Inter', sans-serif;
+        }
+        
+        body {
+            font-family: var(--font-sans);
+        }
+        
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .status-active { background-color: var(--chart-2); }
+        .status-warning { background-color: var(--chart-3); }
+        .status-error { background-color: var(--chart-4); }
+        .status-sync { background-color: var(--chart-1); }
+        
+        .sidebar-nav a.active {
+            background-color: hsl(210 100% 45% / 0.1);
+            border-right: 3px solid var(--primary);
+        }
+        
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .data-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="bg-background text-foreground">
+    <!-- @COMPONENT: MainLayout -->
+    <div class="min-h-screen flex">
+        <!-- @COMPONENT: Sidebar -->
+        <aside class="w-64 bg-card border-r border-border hidden lg:block">
+            <div class="p-6 border-b border-border">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                        <i class="fas fa-heartbeat text-primary-foreground text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-foreground">CoCareSync</h1>
+                        <p class="text-sm text-muted-foreground">TB/HIV Platform</p>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="p-4 space-y-2 sidebar-nav">
+                <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-md text-foreground hover:bg-muted transition-colors active" data-implementation="Navigate to dashboard">
+                    <i class="fas fa-chart-line w-5"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-md text-muted-foreground hover:bg-muted transition-colors" data-implementation="Navigate to patient management">
+                    <i class="fas fa-users w-5"></i>
+                    <span>Patient Management</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-md text-muted-foreground hover:bg-muted transition-colors" data-implementation="Navigate to data integration">
+                    <i class="fas fa-exchange-alt w-5"></i>
+                    <span>Data Integration</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-md text-muted-foreground hover:bg-muted transition-colors" data-implementation="Navigate to analytics">
+                    <i class="fas fa-chart-bar w-5"></i>
+                    <span>Analytics</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-md text-muted-foreground hover:bg-muted transition-colors" data-implementation="Navigate to data quality">
+                    <i class="fas fa-shield-alt w-5"></i>
+                    <span>Data Quality</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-md text-muted-foreground hover:bg-muted transition-colors" data-implementation="Navigate to reports">
+                    <i class="fas fa-file-alt w-5"></i>
+                    <span>Reports</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-md text-muted-foreground hover:bg-muted transition-colors" data-implementation="Navigate to settings">
+                    <i class="fas fa-cog w-5"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+            
+            <div class="absolute bottom-4 left-4 right-4">
+                <div class="bg-muted rounded-lg p-4">
+                    <h4 class="font-medium text-sm mb-2">System Status</h4>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex items-center">
+                            <span class="status-indicator status-active"></span>
+                            <span>TIER.Net Connected</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="status-indicator status-sync"></span>
+                            <span>NHLS Syncing</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="status-indicator status-warning"></span>
+                            <span>EDRWeb Limited</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        <!-- @END_COMPONENT: Sidebar -->
+
+        <!-- @COMPONENT: MainContent -->
+        <main class="flex-1 flex flex-col">
+            <!-- @COMPONENT: TopHeader -->
+            <header class="bg-card border-b border-border px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <button class="lg:hidden p-2 rounded-md hover:bg-muted" data-implementation="Toggle mobile sidebar">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <div>
+                            <h2 class="text-2xl font-semibold text-foreground">Dashboard Overview</h2>
+                            <p class="text-muted-foreground">South Africa TB/HIV Co-infection Management</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <div class="relative">
+                            <input type="search" placeholder="Search patients..." class="pl-10 pr-4 py-2 border border-border rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-64" data-implementation="Global patient search">
+                            <i class="fas fa-search absolute left-3 top-3 text-muted-foreground"></i>
+                        </div>
+                        
+                        <button class="relative p-2 rounded-full hover:bg-muted" data-implementation="Show notifications">
+                            <i class="fas fa-bell text-muted-foreground"></i>
+                            <span class="absolute -top-1 -right-1 w-5 h-5 bg-destructive rounded-full text-xs text-destructive-foreground flex items-center justify-center">3</span>
+                        </button>
+                        
+                        <div class="flex items-center space-x-3">
+                            <div class="text-right">
+                                <p class="text-sm font-medium" data-bind="user.name">Dr. Sarah Mbeki</p>
+                                <p class="text-xs text-muted-foreground" data-bind="user.role">Clinical Coordinator</p>
+                            </div>
+                            <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-sm font-medium">
+                                SM
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <!-- @END_COMPONENT: TopHeader -->
+
+            <!-- @COMPONENT: DashboardContent -->
+            <div class="flex-1 p-6 space-y-6 overflow-auto">
+                <!-- @COMPONENT: KeyMetricsSection -->
+                <section class="data-grid">
+                    <div class="bg-card border border-border rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold">Total Patients</h3>
+                            <i class="fas fa-users text-2xl text-primary"></i>
+                        </div>
+                        <div class="space-y-2">
+                            <p class="text-3xl font-bold text-foreground" data-bind="metrics.totalPatients">12,847</p>
+                            <p class="text-sm text-muted-foreground">
+                                <span class="text-secondary">↗ 4.2%</span> from last month
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-card border border-border rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold">TB/HIV Co-infections</h3>
+                            <i class="fas fa-exclamation-triangle text-2xl text-accent"></i>
+                        </div>
+                        <div class="space-y-2">
+                            <p class="text-3xl font-bold text-foreground" data-bind="metrics.coInfections">7,837</p>
+                            <p class="text-sm text-muted-foreground">
+                                <span class="text-accent">61% co-infection rate</span>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-card border border-border rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold">Data Quality Score</h3>
+                            <i class="fas fa-shield-alt text-2xl text-secondary"></i>
+                        </div>
+                        <div class="space-y-2">
+                            <p class="text-3xl font-bold text-foreground" data-bind="metrics.dataQuality">94.2%</p>
+                            <p class="text-sm text-muted-foreground">
+                                <span class="text-secondary">↗ 2.1%</span> improvement
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-card border border-border rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold">Active Treatments</h3>
+                            <i class="fas fa-pills text-2xl text-chart-4"></i>
+                        </div>
+                        <div class="space-y-2">
+                            <p class="text-3xl font-bold text-foreground" data-bind="metrics.activeTreatments">9,234</p>
+                            <p class="text-sm text-muted-foreground">
+                                <span class="text-secondary">71.9%</span> treatment coverage
+                            </p>
+                        </div>
+                    </div>
+                </section>
+                <!-- @END_COMPONENT: KeyMetricsSection -->
+
+                <!-- @COMPONENT: IntegrationStatusSection -->
+                <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-card border border-border rounded-lg p-6">
+                        <h3 class="text-lg font-semibold mb-4">System Integration Status</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between p-3 bg-muted rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <span class="status-indicator status-active"></span>
+                                    <div>
+                                        <p class="font-medium">TIER.Net</p>
+                                        <p class="text-sm text-muted-foreground">Last sync: 2 min ago</p>
+                                    </div>
+                                </div>
+                                <span class="text-sm text-secondary font-medium">Connected</span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between p-3 bg-muted rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <span class="status-indicator status-sync"></span>
+                                    <div>
+                                        <p class="font-medium">NHLS (TrakCare)</p>
+                                        <p class="text-sm text-muted-foreground">Syncing lab results</p>
+                                    </div>
+                                </div>
+                                <span class="text-sm text-chart-1 font-medium">Syncing</span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between p-3 bg-muted rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <span class="status-indicator status-warning"></span>
+                                    <div>
+                                        <p class="font-medium">EDRWeb</p>
+                                        <p class="text-sm text-muted-foreground">Limited connectivity</p>
+                                    </div>
+                                </div>
+                                <span class="text-sm text-accent font-medium">Limited</span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between p-3 bg-muted rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <span class="status-indicator status-active"></span>
+                                    <div>
+                                        <p class="font-medium">Private Labs (Lancet)</p>
+                                        <p class="text-sm text-muted-foreground">FHIR API active</p>
+                                    </div>
+                                </div>
+                                <span class="text-sm text-secondary font-medium">Connected</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-card border border-border rounded-lg p-6">
+                        <h3 class="text-lg font-semibold mb-4">Recent Data Quality Alerts</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-start space-x-3 p-3 bg-destructive/10 rounded-lg border border-destructive/20">
+                                <i class="fas fa-exclamation-circle text-destructive mt-0.5"></i>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium">Missing CD4 Results</p>
+                                    <p class="text-xs text-muted-foreground">47 patients missing recent CD4 counts</p>
+                                    <p class="text-xs text-muted-foreground">2 hours ago</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start space-x-3 p-3 bg-accent/10 rounded-lg border border-accent/20">
+                                <i class="fas fa-exclamation-triangle text-accent mt-0.5"></i>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium">Treatment Date Inconsistency</p>
+                                    <p class="text-xs text-muted-foreground">TB treatment start dates conflict with HIV records</p>
+                                    <p class="text-xs text-muted-foreground">4 hours ago</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start space-x-3 p-3 bg-secondary/10 rounded-lg border border-secondary/20">
+                                <i class="fas fa-check-circle text-secondary mt-0.5"></i>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium">Data Validation Complete</p>
+                                    <p class="text-xs text-muted-foreground">Weekly TIER.Net validation finished successfully</p>
+                                    <p class="text-xs text-muted-foreground">6 hours ago</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button class="w-full mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors" data-implementation="Navigate to detailed quality report">
+                            View Full Quality Report
+                        </button>
+                    </div>
+                </section>
+                <!-- @END_COMPONENT: IntegrationStatusSection -->
+
+                <!-- @COMPONENT: PatientManagementSection -->
+                <section class="bg-card border border-border rounded-lg p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-semibold">Recent Patient Activity</h3>
+                        <div class="flex space-x-3">
+                            <button class="px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 transition-colors" data-implementation="Add new patient">
+                                <i class="fas fa-plus mr-2"></i>
+                                Add Patient
+                            </button>
+                            <button class="px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors" data-implementation="Import patient data">
+                                <i class="fas fa-upload mr-2"></i>
+                                Import Data
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- @COMPONENT: PatientTable -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-border">
+                                    <th class="text-left py-3 px-4 font-medium text-muted-foreground">Patient ID</th>
+                                    <th class="text-left py-3 px-4 font-medium text-muted-foreground">Name</th>
+                                    <th class="text-left py-3 px-4 font-medium text-muted-foreground">Age</th>
+                                    <th class="text-left py-3 px-4 font-medium text-muted-foreground">TB Status</th>
+                                    <th class="text-left py-3 px-4 font-medium text-muted-foreground">HIV Status</th>
+                                    <th class="text-left py-3 px-4 font-medium text-muted-foreground">Last Update</th>
+                                    <th class="text-left py-3 px-4 font-medium text-muted-foreground">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-border" data-mock="true">
+                                <!-- @MAP: patients.map(patient => ( -->
+                                <tr class="hover:bg-muted/50 transition-colors" data-bind="patient">
+                                    <td class="py-3 px-4 font-mono text-sm">TB-2024-001847</td>
+                                    <td class="py-3 px-4">
+                                        <div>
+                                            <p class="font-medium">Thabo Mokena</p>
+                                            <p class="text-sm text-muted-foreground">Male, DOB: 1987-03-15</p>
+                                        </div>
+                                    </td>
+                                    <td class="py-3 px-4">37</td>
+                                    <td class="py-3 px-4">
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-destructive/10 text-destructive">
+                                            Active TB
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-destructive/10 text-destructive">
+                                            HIV+
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-4 text-sm text-muted-foreground">2 hours ago</td>
+                                    <td class="py-3 px-4">
+                                        <div class="flex space-x-2">
+                                            <button class="text-primary hover:text-primary/80" data-implementation="View patient details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="text-muted-foreground hover:text-foreground" data-implementation="Edit patient">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <tr class="hover:bg-muted/50 transition-colors" data-bind="patient">
+                                    <td class="py-3 px-4 font-mono text-sm">TB-2024-001846</td>
+                                    <td class="py-3 px-4">
+                                        <div>
+                                            <p class="font-medium">Nomsa Dlamini</p>
+                                            <p class="text-sm text-muted-foreground">Female, DOB: 1992-07-22</p>
+                                        </div>
+                                    </td>
+                                    <td class="py-3 px-4">32</td>
+                                    <td class="py-3 px-4">
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-secondary/10 text-secondary">
+                                            Treatment Complete
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-destructive/10 text-destructive">
+                                            HIV+
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-4 text-sm text-muted-foreground">5 hours ago</td>
+                                    <td class="py-3 px-4">
+                                        <div class="flex space-x-2">
+                                            <button class="text-primary hover:text-primary/80" data-implementation="View patient details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="text-muted-foreground hover:text-foreground" data-implementation="Edit patient">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <tr class="hover:bg-muted/50 transition-colors" data-bind="patient">
+                                    <td class="py-3 px-4 font-mono text-sm">TB-2024-001845</td>
+                                    <td class="py-3 px-4">
+                                        <div>
+                                            <p class="font-medium">Sipho Mthembu</p>
+                                            <p class="text-sm text-muted-foreground">Male, DOB: 1979-11-08</p>
+                                        </div>
+                                    </td>
+                                    <td class="py-3 px-4">45</td>
+                                    <td class="py-3 px-4">
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-accent/10 text-accent">
+                                            Under Investigation
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground">
+                                            Unknown
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-4 text-sm text-muted-foreground">1 day ago</td>
+                                    <td class="py-3 px-4">
+                                        <div class="flex space-x-2">
+                                            <button class="text-primary hover:text-primary/80" data-implementation="View patient details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="text-muted-foreground hover:text-foreground" data-implementation="Edit patient">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- @END_MAP )) -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="flex items-center justify-between mt-6 pt-4 border-t border-border">
+                        <p class="text-sm text-muted-foreground">Showing 3 of 12,847 patients</p>
+                        <div class="flex space-x-2">
+                            <button class="px-3 py-1 border border-border rounded text-sm hover:bg-muted" data-implementation="Previous page">
+                                Previous
+                            </button>
+                            <button class="px-3 py-1 bg-primary text-primary-foreground rounded text-sm">1</button>
+                            <button class="px-3 py-1 border border-border rounded text-sm hover:bg-muted">2</button>
+                            <button class="px-3 py-1 border border-border rounded text-sm hover:bg-muted">3</button>
+                            <button class="px-3 py-1 border border-border rounded text-sm hover:bg-muted" data-implementation="Next page">
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: PatientTable -->
+                </section>
+                <!-- @END_COMPONENT: PatientManagementSection -->
+
+                <!-- @COMPONENT: AnalyticsSection -->
+                <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-card border border-border rounded-lg p-6">
+                        <h3 class="text-lg font-semibold mb-4">TB/HIV Co-infection Trends</h3>
+                        <div class="h-64 bg-muted rounded-lg flex items-center justify-center">
+                            <!-- @FUNCTIONALITY: This chart should implement time-series visualization showing TB/HIV co-infection rates over time using Chart.js -->
+                            <div class="text-center text-muted-foreground">
+                                <i class="fas fa-chart-line text-4xl mb-2"></i>
+                                <p>Interactive chart showing monthly co-infection trends</p>
+                                <p class="text-sm">Data from TIER.Net, EDRWeb, and NHLS integration</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-card border border-border rounded-lg p-6">
+                        <h3 class="text-lg font-semibold mb-4">Provincial Distribution</h3>
+                        <div class="h-64 bg-muted rounded-lg flex items-center justify-center">
+                            <!-- @FUNCTIONALITY: This map should implement South African provincial data visualization showing TB/HIV distribution using D3.js -->
+                            <div class="text-center text-muted-foreground">
+                                <i class="fas fa-map text-4xl mb-2"></i>
+                                <p>South Africa provincial TB/HIV distribution map</p>
+                                <p class="text-sm">Real-time data aggregation from all provinces</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- @END_COMPONENT: AnalyticsSection -->
+
+                <!-- @COMPONENT: QuickActionsSection -->
+                <section class="bg-card border border-border rounded-lg p-6">
+                    <h3 class="text-lg font-semibold mb-4">Quick Actions & Tools</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                        <button class="flex flex-col items-center p-4 rounded-lg bg-muted hover:bg-muted/80 transition-colors" data-implementation="Export TIER.Net report">
+                            <i class="fas fa-download text-2xl text-primary mb-2"></i>
+                            <span class="text-sm font-medium">Export TIER.Net</span>
+                        </button>
+                        
+                        <button class="flex flex-col items-center p-4 rounded-lg bg-muted hover:bg-muted/80 transition-colors" data-implementation="Sync NHLS data">
+                            <i class="fas fa-sync text-2xl text-secondary mb-2"></i>
+                            <span class="text-sm font-medium">Sync NHLS</span>
+                        </button>
+                        
+                        <button class="flex flex-col items-center p-4 rounded-lg bg-muted hover:bg-muted/80 transition-colors" data-implementation="Run data validation">
+                            <i class="fas fa-shield-alt text-2xl text-accent mb-2"></i>
+                            <span class="text-sm font-medium">Data Validation</span>
+                        </button>
+                        
+                        <button class="flex flex-col items-center p-4 rounded-lg bg-muted hover:bg-muted/80 transition-colors" data-implementation="Generate WHO report">
+                            <i class="fas fa-file-medical text-2xl text-chart-4 mb-2"></i>
+                            <span class="text-sm font-medium">WHO Reports</span>
+                        </button>
+                        
+                        <button class="flex flex-col items-center p-4 rounded-lg bg-muted hover:bg-muted/80 transition-colors" data-implementation="Backup patient data">
+                            <i class="fas fa-database text-2xl text-chart-5 mb-2"></i>
+                            <span class="text-sm font-medium">Backup Data</span>
+                        </button>
+                        
+                        <button class="flex flex-col items-center p-4 rounded-lg bg-muted hover:bg-muted/80 transition-colors" data-implementation="Configure FHIR endpoints">
+                            <i class="fas fa-cogs text-2xl text-muted-foreground mb-2"></i>
+                            <span class="text-sm font-medium">FHIR Config</span>
+                        </button>
+                    </div>
+                </section>
+                <!-- @END_COMPONENT: QuickActionsSection -->
+            </div>
+            <!-- @END_COMPONENT: DashboardContent -->
+        </main>
+        <!-- @END_COMPONENT: MainContent -->
+    </div>
+    <!-- @END_COMPONENT: MainLayout -->
+
+    <!-- @COMPONENT: ModalOverlay (Hidden by default) -->
+    <div id="patientModal" class="fixed inset-0 bg-background/80 backdrop-blur-sm hidden z-50" data-implementation="Patient details modal">
+        <div class="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] w-full max-w-2xl">
+            <div class="bg-card border border-border rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-semibold">Patient Details</h3>
+                    <button class="text-muted-foreground hover:text-foreground" data-implementation="Close modal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="space-y-6" data-mock="true">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-sm font-medium text-muted-foreground">Patient ID</label>
+                            <p class="text-foreground font-mono">TB-2024-001847</p>
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-muted-foreground">Registration Date</label>
+                            <p class="text-foreground">2024-01-15</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-sm font-medium text-muted-foreground">TB Diagnosis</label>
+                            <p class="text-foreground">Pulmonary TB (Confirmed)</p>
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-muted-foreground">HIV Status</label>
+                            <p class="text-foreground">Positive (CD4: 234)</p>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="text-sm font-medium text-muted-foreground">Treatment History</label>
+                        <div class="mt-2 space-y-2">
+                            <div class="p-3 bg-muted rounded-lg">
+                                <p class="font-medium">ART Started: 2024-01-20</p>
+                                <p class="text-sm text-muted-foreground">Efavirenz/Emtricitabine/Tenofovir</p>
+                            </div>
+                            <div class="p-3 bg-muted rounded-lg">
+                                <p class="font-medium">TB Treatment Started: 2024-01-18</p>
+                                <p class="text-sm text-muted-foreground">HRZE regimen - 2 months intensive phase</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button class="px-4 py-2 border border-border rounded-md hover:bg-muted" data-implementation="Close modal">
+                        Close
+                    </button>
+                    <button class="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90" data-implementation="Edit patient">
+                        Edit Patient
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: ModalOverlay -->
+
+    <script>
+        // TODO: Implement business logic, API calls, and state management
+        (function() {
+            // Modal functionality
+            const modal = document.getElementById('patientModal');
+            const viewButtons = document.querySelectorAll('[data-implementation*="View patient details"]');
+            const closeButtons = document.querySelectorAll('[data-implementation*="Close modal"]');
+            
+            viewButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    modal.classList.remove('hidden');
+                });
+            });
+            
+            closeButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    modal.classList.add('hidden');
+                });
+            });
+            
+            // Close modal on backdrop click
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+            
+            // Search functionality placeholder
+            const searchInput = document.querySelector('input[type="search"]');
+            searchInput.addEventListener('input', (e) => {
+                // TODO: Implement real-time patient search
+                console.log('Searching for:', e.target.value);
+            });
+            
+            // Navigation active state management
+            const navLinks = document.querySelectorAll('.sidebar-nav a');
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                });
+            });
+        })();
+    </script>
+</body>
+</html>
